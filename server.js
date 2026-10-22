@@ -7,7 +7,12 @@ app.use(cors());
 
 const PORT = process.env.PORT || 3000;
 
-// Endpoint kiểm tra trang thái sống của server (Ping API)
+// Thêm đoạn này để khi truy cập trang chủ Render không bị lỗi Cannot GET /
+app.get('/', (req, res) => {
+    res.status(200).send('Discord Toolkit Backend is Online and Running!');
+});
+
+// Endpoint kiểm tra trạng thái sống của server (Ping API)
 app.get('/ping', (req, res) => {
     res.status(200).json({ status: 'online', timestamp: new Date() });
 });
@@ -33,7 +38,10 @@ app.post('/api/action', async (req, res) => {
             return res.json({ success: true, message: 'Đã bật treo Go Live stream qua Gateway!' });
 
         case 'treo_voice':
-            return res.json({ success: true, message: `Đã kết nối và treo tài khoản tại Voice ID: ${channelId}` });
+            return res.json({ success: true, message: `Đã kết nối và treo tài khoản tại Voice ID: ${channelId || 'Chưa chọn'}` });
+
+        case 'toggle_mic':
+            return res.json({ success: true, message: 'Đã chuyển đổi trạng thái Mic trên kênh thoại!' });
 
         case 'stop':
         case 'stop_voice':
@@ -41,6 +49,9 @@ app.post('/api/action', async (req, res) => {
 
         case 'start_quest':
             return res.json({ success: true, message: 'Đã thêm tài khoản vào hàng chờ cày Quest!' });
+
+        case 'stop_quest':
+            return res.json({ success: true, message: 'Đã hủy cày Quest cho tài khoản!' });
 
         default:
             return res.status(400).json({ success: false, message: 'Lệnh không hợp lệ!' });
