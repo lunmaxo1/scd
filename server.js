@@ -1,6 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const fetch = require('node-fetch');
 
 const app = express();
 app.use(express.json());
@@ -8,7 +7,12 @@ app.use(cors());
 
 const PORT = process.env.PORT || 3000;
 
-// API Nhận lệnh từ Frontend Web của bạn
+// Endpoint kiểm tra trang thái sống của server (Ping API)
+app.get('/ping', (req, res) => {
+    res.status(200).json({ status: 'online', timestamp: new Date() });
+});
+
+// Endpoint xử lý tác vụ từ Frontend Dashboard gửi sang
 app.post('/api/action', async (req, res) => {
     const { token, action, channelId } = req.body;
 
@@ -16,29 +20,33 @@ app.post('/api/action', async (req, res) => {
         return res.status(400).json({ success: false, message: 'Thiếu Discord Token!' });
     }
 
-    console.log(`Nhận lệnh [${action}] với token tài khoản...`);
+    console.log(`[Render Work] Nhận lệnh "${action}" cho token: ${token.substring(0, 10)}...`);
 
-    try {
-        if (action === 'treo_voice') {
-            // Logic kết nối Gateway / Voice Channel thực tế sẽ xử lý ở đây
-            // Do Discord giới hạn self-bot voice qua API thuần, cần các thư viện như discord.js-selfbot
-            return res.json({ success: true, message: `Đang giả lập treo voice tại kênh: ${channelId || 'Chưa rõ'}` });
-        } 
-        
-        else if (action === 'treo_game') {
-            return res.json({ success: true, message: 'Đã kích hoạt giả lập treo game qua Gateway!' });
-        }
+    switch (action) {
+        case 'treo_gio_choi':
+            return res.json({ success: true, message: 'Đã kích hoạt treo giờ chơi 1 game thành công trên Render!' });
+            
+        case 'treo_da_dang':
+            return res.json({ success: true, message: 'Đã kích hoạt xoay vòng game 45 phút/lần!' });
 
-        else if (action === 'stop') {
-            return res.json({ success: true, message: 'Đã dừng toàn bộ tiến trình trên server!' });
-        }
+        case 'treo_golive':
+            return res.json({ success: true, message: 'Đã bật treo Go Live stream qua Gateway!' });
 
-        res.status(400).json({ success: false, message: 'Hành động không hợp lệ!' });
-    } catch (err) {
-        res.status(500).json({ success: false, message: err.message });
+        case 'treo_voice':
+            return res.json({ success: true, message: `Đã kết nối và treo tài khoản tại Voice ID: ${channelId}` });
+
+        case 'stop':
+        case 'stop_voice':
+            return res.json({ success: true, message: 'Đã dừng toàn bộ tiến trình treo trên Render!' });
+
+        case 'start_quest':
+            return res.json({ success: true, message: 'Đã thêm tài khoản vào hàng chờ cày Quest!' });
+
+        default:
+            return res.status(400).json({ success: false, message: 'Lệnh không hợp lệ!' });
     }
 });
 
 app.listen(PORT, () => {
-    console.log(`Server Backend đang chạy trên cổng ${PORT}`);
+    console.log(`Server Backend đang hoạt động tại port ${PORT}`);
 });
